@@ -23,7 +23,6 @@ const navLinks = [
   { label: 'Home', to: '/' },
   { label: 'Reflection', to: '/reflection' },
   { label: 'Meditations', to: '/meditations' },
-  { label: 'Journal', to: '/journal' },
 ];
 
 function isActive(to: string): boolean {
