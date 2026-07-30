@@ -26,3 +26,7 @@ logs
 .env
 .env.*
 !.env.example
+
+HOME_PAGE_PROMPT.md
+AGENTS.md
+DESIGN.md
