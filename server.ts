@@ -1,6 +1,5 @@
-﻿import app from "./src/app.js";
-import { httpServerHandler } from "cloudflare:node";
+import "dotenv/config";
+import app from "./src/app.js";
 
-app.listen(3000);
-
-export default httpServerHandler({ port: 3000 });
+const PORT = parseInt(process.env.PORT || "3200", 10);
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

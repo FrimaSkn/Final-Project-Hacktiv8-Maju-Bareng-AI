@@ -10,7 +10,7 @@
   },
   "servers": [
     {
-      "url": "https://stoicmind-api.frima.workers.dev",
+      "url": "http://localhost:3200",
       "description": "Local development"
     }
   ],
