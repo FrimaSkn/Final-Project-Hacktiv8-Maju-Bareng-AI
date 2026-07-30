@@ -1,75 +1,70 @@
-# Nuxt Minimal Starter
+# StoicMind
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+A digital sanctuary for Stoic reflection, powered by AI.
+
+StoicMind is an AI-assisted reflection app inspired by Stoic philosophy — particularly the **Dichotomy of Control**. Share what's on your mind, and the AI helps you separate what you can control (your thoughts, actions, judgments) from what you cannot (external events, others' opinions). Built as a calm, private space for mental clarity.
+
+## Features
+
+- **Stoic Reflection Chat** — AI conversation that classifies your concerns into Internal vs External (Dichotomy of Control)
+- **Dichotomy Analysis Panel** — Visual breakdown of what you can and cannot control after each message
+- **Crisis Support Detection** — Automatic detection of distress signals with localized mental health resources in 6 languages
+- **Anonymous & Private** — No accounts, no sign-up, no tracking. Session stored locally as a random UUID
+- **Dark Theme** — Material Design 3-inspired dark palette with Roman aesthetic (Fraunces serif, warm tones)
+- **Responsive Design** — Works on desktop and mobile
+
+## Tech Stack
+
+- **Framework:** Nuxt 4, Vue 3, TypeScript
+- **Styling:** Tailwind CSS v4
+- **Icons:** Lucide (via @nuxt/icon)
+- **Fonts:** Merriweather, Inter, Fraunces (via @nuxt/fonts)
+- **Backend:** External AI chat service (see Environment)
+
+## Project Structure
+
+```
+app/
+├── components/
+│   ├── chat/          # Chat UI (Bubble, Input, ControlAnalysisPanel, SupportBanner)
+│   ├── home/          # Landing page (HeroQuote, FeatureCard, NavBar)
+│   └── shared/        # Shared components (BreathingRing)
+├── composables/       # useReflectionChat, useUserLanguage
+├── config/            # App constants, translations
+├── layouts/           # default.vue
+├── pages/             # /, /reflection, /meditations, /journal
+├── types/             # TypeScript types
+└── assets/css/        # Tailwind theme + custom styles
+server/
+└── api/               # Chat API proxy
+```
 
 ## Setup
 
-Make sure to install dependencies:
-
 ```bash
-# npm
 npm install
-
-# pnpm
-pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
 ```
 
 ## Development Server
 
-Start the development server on `http://localhost:3000`:
-
 ```bash
-# npm
 npm run dev
-
-# pnpm
-pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
+# Open http://localhost:3000
 ```
 
 ## Production
 
-Build the application for production:
-
 ```bash
-# npm
 npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
-```
-
-Locally preview production build:
-
-```bash
-# npm
 npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
 ```
 
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+## Environment Variables
+
+| Variable | Description |
+|---|---|
+| `NUXT_CHAT_API_BASE` | Backend chat service URL (default: `http://localhost:3200`) |
+
+## License
+
+MIT
