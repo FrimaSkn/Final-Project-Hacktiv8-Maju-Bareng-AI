@@ -32,7 +32,7 @@ app/
 ├── composables/       # useReflectionChat, useUserLanguage
 ├── config/            # App constants, translations
 ├── layouts/           # default.vue
-├── pages/             # /, /reflection, /meditations, /journal
+├── pages/             # /, /reflection, /meditations (Coming soon), /journal (Coming soon)
 ├── types/             # TypeScript types
 └── assets/css/        # Tailwind theme + custom styles
 server/
