@@ -1,0 +1,422 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "StoicMind API",
+    "description": "REST API for a virtual perspective-counselor chatbot based on Stoic philosophy + CBT with the \"Marcus\" persona. Supports multi-turn conversation, structured output (Dichotomy of Control), voice input, journaling, and a two-layer safety system.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "StoicMind Team"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://stoicmind-api.frima.workers.dev",
+      "description": "Local development"
+    }
+  ],
+  "tags": [
+    { "name": "Health", "description": "Server health check" },
+    { "name": "Session", "description": "Conversation session — create, view history, delete" },
+    { "name": "Chat", "description": "Send a text or audio message to Marcus" },
+    { "name": "Dichotomy", "description": "Dichotomy Tool — manual Internal/External mapping" },
+    { "name": "Journal", "description": "My Journal — CRUD for reflection entries" }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": ["Health"],
+        "summary": "Health check",
+        "description": "Confirms the server is running.",
+        "responses": {
+          "200": {
+            "description": "Server OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "example": "OK" },
+                    "timestamp": { "type": "string", "format": "date-time" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/session": {
+      "post": {
+        "tags": ["Session"],
+        "summary": "Create a new session",
+        "description": "Creates a new conversation session. Returns a unique sessionId (UUID) used in all chat/dichotomy endpoints.",
+        "responses": {
+          "201": {
+            "description": "Session created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "sessionId": { "type": "string", "format": "uuid", "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/session/{id}/history": {
+      "get": {
+        "tags": ["Session"],
+        "summary": "View conversation history",
+        "description": "Returns an array of message history (user & model) within a session. Useful for debugging or rendering the chat history UI.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "Session ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "History found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "history": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "role": { "type": "string", "enum": ["user", "model"] },
+                          "parts": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "text": { "type": "string" }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/session/{id}": {
+      "delete": {
+        "tags": ["Session"],
+        "summary": "Delete a session",
+        "description": "Deletes a session and its entire conversation history from memory.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "Session ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Session deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string", "example": "Session successfully deleted." }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/chat": {
+      "post": {
+        "tags": ["Chat"],
+        "summary": "Send a message to Marcus",
+        "description": "Sends a text message (application/json) or audio (multipart/form-data). Audio is transcribed first. The response contains reply + optional dichotomy_table + crisis_flag. If a crisis is detected, the reply is overridden with a message directing the user to professional help.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["sessionId", "message"],
+                "properties": {
+                  "sessionId": { "type": "string", "format": "uuid", "description": "Active session ID" },
+                  "message": { "type": "string", "description": "Text message from the user", "example": "I'm super stressed, tomorrow I have a presentation in front of the company's board." }
+                }
+              }
+            },
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["sessionId", "audio"],
+                "properties": {
+                  "sessionId": { "type": "string", "format": "uuid", "description": "Active session ID" },
+                  "audio": { "type": "string", "format": "binary", "description": "Audio file (mp3, wav, ogg, etc.)" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Reply from Marcus",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ChatResponse" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "500": { "$ref": "#/components/responses/ServerError" }
+        }
+      }
+    },
+    "/dichotomy": {
+      "post": {
+        "tags": ["Dichotomy"],
+        "summary": "Dichotomy Tool — manual mapping",
+        "description": "Manual trigger to map a single problem into Internal/External without going through the full chat flow. Used when the user presses the \"Dichotomy Tool\" button in the UI.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["problem"],
+                "properties": {
+                  "sessionId": { "type": "string", "format": "uuid", "description": "Session ID (optional, for additional context)" },
+                  "problem": { "type": "string", "description": "The problem to be mapped", "example": "I'm afraid I'll blank out during tomorrow's presentation in front of the board." }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Dichotomy mapping result",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ChatResponse" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "500": { "$ref": "#/components/responses/ServerError" }
+        }
+      }
+    },
+    "/journal": {
+      "post": {
+        "tags": ["Journal"],
+        "summary": "Save a journal entry",
+        "description": "Saves a reflection entry (a summary of a chat session or a manual note from the user).",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["title", "content"],
+                "properties": {
+                  "sessionId": { "type": "string", "format": "uuid", "description": "Session ID (optional)" },
+                  "title": { "type": "string", "description": "Entry title", "example": "Tonight's reflection" },
+                  "content": { "type": "string", "description": "Reflection content", "example": "I learned to separate effort from outcome." }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Entry saved successfully",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/JournalCreated" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" }
+        }
+      },
+      "get": {
+        "tags": ["Journal"],
+        "summary": "View all journal entries",
+        "description": "Returns a list of all journal entries.",
+        "responses": {
+          "200": {
+            "description": "List of entries",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "entries": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/JournalEntry" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/journal/{id}": {
+      "get": {
+        "tags": ["Journal"],
+        "summary": "View a single journal entry",
+        "description": "Retrieves a single journal entry by ID.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "Journal ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Entry found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/JournalEntry" }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "delete": {
+        "tags": ["Journal"],
+        "summary": "Delete a journal entry",
+        "description": "Deletes a single journal entry by ID.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" },
+            "description": "Journal ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Entry deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string", "example": "Journal entry successfully deleted." }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "DichotomyTable": {
+        "type": ["object", "null"],
+        "properties": {
+          "internal": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Things the user can control ('INTERNAL' card in the UI)"
+          },
+          "external": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Things outside the user's control ('EXTERNAL' card in the UI)"
+          }
+        }
+      },
+      "ChatResponse": {
+        "type": "object",
+        "properties": {
+          "reply": { "type": "string", "description": "Empathetic-logical reply from Marcus" },
+          "dichotomy_table": { "$ref": "#/components/schemas/DichotomyTable" },
+          "crisis_flag": { "type": "boolean", "description": "true if signs of crisis are detected" }
+        },
+        "required": ["reply", "crisis_flag"]
+      },
+      "JournalEntry": {
+        "type": "object",
+        "properties": {
+          "journalId": { "type": "string", "format": "uuid" },
+          "sessionId": { "type": "string", "format": "uuid", "nullable": true },
+          "title": { "type": "string" },
+          "content": { "type": "string" },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "JournalCreated": {
+        "type": "object",
+        "properties": {
+          "journalId": { "type": "string", "format": "uuid" },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": { "type": "string", "description": "Error message" }
+        }
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Invalid request body (required field missing/empty)",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Session or entry not found",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+          }
+        }
+      },
+      "ServerError": {
+        "description": "Internal server error",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+          }
+        }
+      }
+    }
+  }
+}
