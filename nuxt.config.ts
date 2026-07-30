@@ -7,15 +7,10 @@ export default defineNuxtConfig({
     '@nuxt/eslint',
     '@nuxt/fonts',
     '@nuxt/icon',
-    'nitro-cloudflare-dev',
   ],
 
   nitro: {
-    preset: 'cloudflare_module',
-    cloudflare: {
-      deployConfig: true,
-      nodeCompat: true,
-    },
+    preset: 'node_server',
   },
 
   css: ['~/assets/css/main.css'],

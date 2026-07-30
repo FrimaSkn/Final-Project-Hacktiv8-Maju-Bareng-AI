@@ -60,16 +60,8 @@ function handleKeydown(e: KeyboardEvent) {
       </button>
     </div>
 
-    <!-- Shortcut links -->
-    <div class="mt-2 flex items-center justify-center gap-4">
-      <button class="flex items-center gap-1 body-sm text-on-surface-variant transition-colors hover:text-on-surface">
-        <Icon name="lucide:book" class="h-3.5 w-3.5" />
-        Dichotomy Tool
-      </button>
-      <button class="flex items-center gap-1 body-sm text-on-surface-variant transition-colors hover:text-on-surface">
-        <Icon name="lucide:heart" class="h-3.5 w-3.5" />
-        Breathe
-      </button>
-    </div>
+    <p class="mt-2 text-center text-xs text-on-surface-variant">
+      StoicMind is AI and can make mistakes. Use your own judgment.
+    </p>
   </div>
 </template>

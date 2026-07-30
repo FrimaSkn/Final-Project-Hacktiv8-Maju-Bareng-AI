@@ -7,8 +7,7 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare",
-    "deploy:cf": "npx wrangler deploy"
+    "postinstall": "nuxt prepare"
   },
   "dependencies": {
     "@nuxt/icon": "^2.3.1",
@@ -22,7 +21,6 @@
     "@nuxt/fonts": "^0.14.0",
     "@tailwindcss/vite": "^4.3.3",
     "eslint": "^10.7.0",
-    "nitro-cloudflare-dev": "^0.2.2",
     "prettier": "^3.9.5",
     "tailwindcss": "^4.3.3",
     "typescript": "^6.0.3",

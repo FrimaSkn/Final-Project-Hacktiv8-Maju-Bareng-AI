@@ -6,10 +6,6 @@
 .cache
 dist
 
-# Wrangler
-.wrangler
-.dev.vars
-
 # Node dependencies
 node_modules
 
