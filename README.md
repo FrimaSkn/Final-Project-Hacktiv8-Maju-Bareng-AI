@@ -155,7 +155,3 @@ npm run typecheck  # tsc --noEmit (type checking only)
 ```
 
 ---
-
-## License
-
-ISC
