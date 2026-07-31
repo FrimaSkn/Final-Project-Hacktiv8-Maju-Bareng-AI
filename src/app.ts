@@ -1,4 +1,5 @@
 ﻿import express, { Request, Response } from "express";
+import cors from "cors";
 import { apiReference } from "@scalar/express-api-reference";
 import sessionRoutes from "./routes/session.js";
 import chatRoutes from "./routes/chat.js";
@@ -24,6 +25,7 @@ app.use((req: Request, _res: Response, next: () => void) => {
   }
 });
 
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
