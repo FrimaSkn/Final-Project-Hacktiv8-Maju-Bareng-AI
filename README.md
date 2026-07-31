@@ -65,6 +65,3 @@ npm run preview
 |---|---|
 | `NUXT_CHAT_API_BASE` | Backend chat service URL (default: `http://localhost:3200`) |
 
-## License
-
-MIT
